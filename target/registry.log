@@ -1,0 +1,43 @@
+2021/02/23 16:39:11 dial lgc success: ws://127.0.0.1:3109/ws?t=registry
+2021/02/23 16:39:18 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:39:28 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:39:38 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:39:48 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:39:58 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:40:08 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:40:08 registry send heart beat to comet:127.0.0.1:55149,err:<nil> 
+2021/02/23 16:40:08 recv heart beat from comet
+2021/02/23 16:40:11 registry recv logic msg:{"msg":null,"type":"301"},logic conns:{{0 0} {{map[127.0.0.1:3109:0xc00012c028] false}} map[] 0}
+2021/02/23 16:40:11 registry send to logic:127.0.0.1:3109 heart beat
+2021/02/23 16:40:18 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:40:28 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:40:38 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:40:48 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:40:58 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:41:08 registry send heart beat to comet:127.0.0.1:55149,err:<nil> 
+2021/02/23 16:41:08 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:41:08 recv heart beat from comet
+2021/02/23 16:41:11 registry send to logic:127.0.0.1:3109 heart beat
+2021/02/23 16:41:11 registry recv logic msg:{"msg":null,"type":"301"},logic conns:{{0 0} {{map[127.0.0.1:3109:0xc00012c028] false}} map[] 0}
+2021/02/23 16:41:18 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:41:28 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:41:38 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:41:48 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:41:58 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:42:08 registry send heart beat to comet:127.0.0.1:55149,err:<nil> 
+2021/02/23 16:42:08 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:42:08 recv heart beat from comet
+2021/02/23 16:42:11 registry recv logic msg:{"msg":null,"type":"301"},logic conns:{{0 0} {{map[127.0.0.1:3109:0xc00012c028] false}} map[] 0}
+2021/02/23 16:42:11 registry send to logic:127.0.0.1:3109 heart beat
+2021/02/23 16:42:18 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:42:28 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:42:38 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:42:48 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:42:58 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:43:08 registry send heart beat to comet:127.0.0.1:55149,err:<nil> 
+2021/02/23 16:43:08 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:43:08 recv heart beat from comet
+2021/02/23 16:43:11 registry recv logic msg:{"msg":null,"type":"301"},logic conns:{{0 0} {{map[127.0.0.1:3109:0xc00012c028] false}} map[] 0}
+2021/02/23 16:43:11 registry send to logic:127.0.0.1:3109 heart beat
+2021/02/23 16:43:18 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
+2021/02/23 16:43:28 registry boardcast logic servers:127.0.0.1:3109, to comet:127.0.0.1:55149,err:<nil>
