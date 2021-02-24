@@ -13,7 +13,7 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
-
+//本地版的注册中心，后期使用压缩字典树实现
 type registry struct {
 	port          string `json:"addr"`
 	stop          chan error
@@ -90,7 +90,7 @@ func (r *registry) serve(w http.ResponseWriter, req *http.Request) {
 	}
 
 }
-
+//广播地址 comet
 func (r *registry) bcastcomet() {
 	t := time.NewTicker(time.Second * time.Duration(r.hbcastlgcsvrs))
 	for {
@@ -123,7 +123,7 @@ func (r *registry) bcastcomet() {
 		}
 	}
 }
-
+//comet 的心跳检测
 func (r *registry) comethb() {
 	t := time.NewTicker(time.Second * time.Duration(r.hbcomet))
 	for {

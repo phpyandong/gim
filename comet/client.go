@@ -92,7 +92,7 @@ func (cli *client) send() {
 }
 
 //监听
-func Serve(w http.ResponseWriter, r *http.Request, c *comet) {
+func Serve(w http.ResponseWriter, r *http.Request, cc *comet) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("cli upgrade:", err)
@@ -107,7 +107,7 @@ func Serve(w http.ResponseWriter, r *http.Request, c *comet) {
 	if err != nil || tag == "" {
 		return
 	}
-	cli := new(c, conn, id, tag)
+	cli := new(cc, conn, id, tag)
 	if cli.comet.isexist(cli) {
 		return
 	}

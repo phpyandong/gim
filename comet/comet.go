@@ -108,6 +108,7 @@ func (c *comet) recv() {
 }
 
 //conn to  registry
+//comet 连接注册服务
 func (comet *comet) registry() {
 	//连接
 	u := url.URL{Scheme: "ws", Host: comet.regaddr, Path: "/ws"}
