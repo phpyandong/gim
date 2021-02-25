@@ -27,6 +27,8 @@ type cometServer struct { //Bucket
 
 	cligroup     sync.Map //bucket cli groups (sync.map->groupid:[]*client)
 						//comet 服务 存储群组id对应的client
+	grprw        sync.RWMutex
+
 	clibkts      []*clibkt  //一个comet服务对应多个client  重要
 	chs          []chan *model.DTO //recv ( logic or cli ) msg chs
 	chsCnt       int64             //recv ( logic or cli ) msg ch cnt
@@ -41,7 +43,6 @@ type cometServer struct { //Bucket
 	hblogic      int64		//与logic服务的心跳检测
 	hbclient     int64		//一个心跳检测的客户端
 	hbwatchreg   int64		//xin
-	grprw        sync.RWMutex
 }
 type clibkt struct {
 	rw      sync.RWMutex
