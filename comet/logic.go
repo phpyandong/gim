@@ -8,9 +8,9 @@ import (
 	"github.com/phpyandong/gim/model"
 	"github.com/gorilla/websocket"
 )
-
+//comet下logic的client
 type logic struct {
-	comet     *comet
+	comet     *comet  //绑定的comet服务
 	logicaddr string
 	conn      *websocket.Conn
 	ch        chan *model.DTO
@@ -23,7 +23,7 @@ func newlogic(addr string, c *comet) *logic {
 		ch:        make(chan *model.DTO),
 	}
 }
-
+//启动一个logic客服端,中转，将comet数据转发给 logic 服务
 func (l *logic) run() {
 	//dial
 	u := url.URL{Scheme: "ws", Host: l.logicaddr, Path: "/ws"}
@@ -46,15 +46,18 @@ func (l *logic) run() {
 		_, message, err := c.ReadMessage()
 		if err != nil {
 			log.Printf("comet recv msg from logic error:%v", err)
-			l.comet.logics.Delete(c.RemoteAddr().String())
+			l.comet.logics.Delete(c.RemoteAddr().String())//服务出错。
+			// 则将本地存储的logic server ip 删除
 			return
 		}
 		json.Unmarshal(message, j)
 		ch := l.comet.getch() //notice: comet ch
-		ch <- j
+		ch <- j //接收到消息后通过channel转发给comet；
+		// todo 这里是往channal里添加数据，
+		// 消费代码在哪里，如何才能快速找到呢？
 	}
 }
-
+//将comet消息转发给logic
 func (l *logic) send() {
 	for {
 		select {

@@ -8,11 +8,11 @@ import (
 	"github.com/phpyandong/gim/model"
 	"github.com/gorilla/websocket"
 )
-
+//logic server中的comet 客户端
 type comet struct {
-	logic  *logic
+	logic  *logic	//该logic服务端
 	conn   *websocket.Conn
-	ch     chan *model.DTO
+	ch     chan *model.DTO  //消息体
 	stop   chan error
 	source string
 }
@@ -26,11 +26,11 @@ func newcomet(l *logic, conn *websocket.Conn, source string) *comet {
 		source: source,
 	}
 }
-
+//启动服务的方法
 func (c *comet) run() {
-	go c.recv()
-	go c.consume()
-	go c.hb()
+	go c.recv() //启动一个goroutinue接收消息
+	go c.consume()	//启动一个goroutinue 消费消息
+	go c.hb()		//启动一个goroutinue 进行心跳检测
 	<-c.stop
 }
 
@@ -48,6 +48,7 @@ func (c *comet) recv() {
 		ch <- j
 	}
 }
+//消费消息，包括发送到regist服务的心跳检测
 func (c *comet) consume() {
 	for {
 		select {
@@ -80,7 +81,7 @@ func (c *comet) consume() {
 					err = c.conn.WriteMessage(websocket.TextMessage, j)
 					log.Printf("logic send bcast msg to %s:%s, error:%v", c.source, c.conn.RemoteAddr().String(), err)
 				}
-				//lgc send hb to cmt or reg
+				//lgc send hb to cmt or reg，心跳检测消息的处理
 				if dto.Type == model.LgcHbToCmt || dto.Type == model.LgcHbToReg {
 					j, _ := json.Marshal(dto)
 					err = c.conn.WriteMessage(websocket.TextMessage, j)

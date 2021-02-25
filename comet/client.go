@@ -36,12 +36,12 @@ func new(comet *comet, conn *websocket.Conn, id int64, tag string) *client {
 }
 
 func (cli *client) run() {
-	go cli.recv()
-	go cli.send()
+	go cli.recv() //开启一个goroutinue接收消息
+	go cli.send() //另外开启一个goroutinue 发送消息
 	<-cli.stop
 }
 
-//recv cli msg
+//recv cli msg  接收来自 cli 的消息
 func (cli *client) recv() {
 	for {
 		j := &model.DTO{}
@@ -71,7 +71,7 @@ func (cli *client) recv() {
 	}
 }
 
-//send msg to cli
+//send msg to cli  将消息转发给
 func (cli *client) send() {
 	for {
 		select {

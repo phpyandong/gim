@@ -89,3 +89,41 @@ tag 是指终端类别有如下：ios,android,mini,web,h5,ipad
 	"type": "403"
 }
 ```
+### 项目结构
+├── cmd
+│   ├── comet
+│   │   └── main.go
+│   ├── logic
+│   │   └── main.go
+│   └── registry
+│       └── main.go
+├── comet
+│   ├── client.go   comet服务的client，有对外暴露的 加群，退群，发消息，接收消息 等接口
+│   ├── comet.go    comet 服务端
+│   └── logic.go
+├── framework.png
+├── go.mod
+├── go.sum
+├── logic
+│   ├── comet.go
+│   └── logic.go
+├── makefile
+├── model
+│   ├── conf.go
+│   ├── const.go
+│   └── msg.go
+├── readme.md
+├── registry
+│   ├── comet.go
+│   ├── logic.go
+│   └── registry.go
+├── target
+│   ├── comet
+│   ├── comet.log
+│   ├── logic
+│   ├── logic.log
+│   ├── registry
+│   └── registry.log
+└── test
+    └── msg.go
+

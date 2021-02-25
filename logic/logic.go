@@ -44,7 +44,7 @@ func New(conf *model.Conf) *logic {
 	go l.watchreg(regAddr, lgcSvrPort)
 	return l
 }
-
+//运行logic服务
 func (l *logic) Run() {
 
 	for i := int64(0); i < l.chsCnt; i++ {
@@ -64,7 +64,7 @@ func (l *logic) Run() {
 
 	<-l.stop
 }
-
+//启动服务
 func (l *logic) serve(w http.ResponseWriter, req *http.Request) {
 	conn, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
@@ -86,7 +86,7 @@ func (l *logic) serve(w http.ResponseWriter, req *http.Request) {
 	c.run()
 }
 
-//consume msg
+//consume msg 消费消息
 func (l *logic) consume(ch chan *model.DTO) {
 	for {
 		select {

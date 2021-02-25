@@ -18,30 +18,34 @@ import (
 var upgrader = websocket.Upgrader{} // use default options
 
 type comet struct {
+
+	regaddr      string	//comet服务的地址
+	port         string
+	stop         chan error	//该服务停止信号
+
+
 	clibckcnt    int64    //config cli bucket size
 	cliCnt       int64    //client cnt
 	cligroup     sync.Map //bucket cli groups (sync.map->groupid:[]*client)
 	logics       sync.Map //logic conns (sync.map->addr:logic)
 	logicCnt     int64
-	stop         chan error
-	regaddr      string
-	isregistered bool
+
+	isregistered bool	//是否注册
 	chs          []chan *model.DTO //recv ( logic or cli ) msg chs
 	chsCnt       int64             //recv ( logic or cli ) msg ch cnt
-	port         string
 	hbregistry   int64
-	hblogic      int64
-	hbclient     int64
-	hbwatchreg   int64
+	hblogic      int64		//与logic服务的心跳检测
+	hbclient     int64		//一个心跳检测的客户端
+	hbwatchreg   int64		//xin
 	grprw        sync.RWMutex
-	clibkts      []*clibkt
+	clibkts      []*clibkt  //一个comet服务对应多个client
 }
 type clibkt struct {
 	rw      sync.RWMutex
 	clients sync.Map // client conns (sync.map->uid:[]*client)
 }
 
-func New(conf *model.Conf) *comet {
+func NewComet(conf *model.Conf) *comet {
 	if conf == nil || conf.Registry == nil || conf.Registry.Host == "" {
 		panic("conf argument error")
 	}
@@ -73,7 +77,7 @@ func New(conf *model.Conf) *comet {
 	}
 	return c
 }
-
+//启动comet服务
 func (c *comet) Run() {
 	go func() {
 		http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -82,13 +86,13 @@ func (c *comet) Run() {
 		c.stop <- http.ListenAndServe(fmt.Sprintf(":%s", c.port), nil)
 	}()
 
-	go c.registry()
+	go c.registry() //注册到发现服务
 
-	go c.watchreg()
+	go c.watchreg()	//检测是否注册到服务。否则重新注册
 
-	go c.recv()
+	go c.recv()	//接收数据
 
-	go c.hb()
+	go c.hb()	//心跳检测
 
 	go c.statistics()
 
@@ -162,7 +166,7 @@ func (comet *comet) registry() {
 	}
 }
 
-//watch registry conn
+//watch registry conn   监控注册是否成功，否则重新注册
 func (c *comet) watchreg() {
 	t := time.NewTicker(time.Second * time.Duration(c.hbwatchreg))
 	defer t.Stop()
@@ -180,6 +184,7 @@ func (c *comet) watchreg() {
 func (c *comet) statistics() {
 	t := time.NewTicker(time.Second * 1)
 	defer t.Stop()
+	//定时计数
 	for {
 		select {
 		case <-t.C:
@@ -224,7 +229,7 @@ func (c *comet) statistics() {
 	}
 }
 
-//consume msg
+//consume msg  消费消息
 func (c *comet) consume(ch chan *model.DTO) {
 	for {
 		select {
@@ -424,7 +429,7 @@ func (c *comet) consume(ch chan *model.DTO) {
 	}
 }
 
-//conns to logic
+//conns to logic   与logic服务建立连接，在这里new logic client
 func (c *comet) connlogic(dto *model.DTO) {
 	if dto != nil && dto.Msg != nil && dto.Msg.Content != "" {
 		addrs := strings.Split(dto.Msg.Content, ",")
@@ -441,13 +446,13 @@ func (c *comet) connlogic(dto *model.DTO) {
 	}
 }
 
-//rand a ch
+//rand a ch  多个channel中随机选择一个进行传递消息
 func (c *comet) getch() (ch chan *model.DTO) {
 	ch = c.chs[rand.Int63n(c.chsCnt-1)]
 	return
 }
 
-//heartbeat
+//heartbeat 本服务的心跳检测
 func (c *comet) hb() {
 	//hb to client
 	go func() {
@@ -483,7 +488,7 @@ func (c *comet) hb() {
 		}
 	}()
 }
-
+//hash算法，获取客户端的index
 func (c *comet) modclidx(id int64) (idx int64) {
 	return id % c.clibckcnt
 }
