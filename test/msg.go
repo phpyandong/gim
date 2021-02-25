@@ -71,6 +71,12 @@ func main() {
 			//1号android设备,全员广播
 			boardcast("1", "android")
 		}
+
+	case "33":
+		{
+			//2号ios设备向1号ios设备发送私聊
+			climsg("33", "ios", "ios", 1)
+		}
 	}
 }
 

@@ -9,22 +9,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 //comet下logic的client
-type logic struct {
-	comet     *comet  //绑定的comet服务
+type logiclient struct {
+	comet     *cometServer  //绑定的comet服务
 	logicaddr string
 	conn      *websocket.Conn
 	ch        chan *model.DTO
 }
 
-func newlogic(addr string, c *comet) *logic {
-	return &logic{
+func NewLogicClient(addr string, c *cometServer) *logiclient {
+	return &logiclient{
 		comet:     c,
 		logicaddr: addr,
 		ch:        make(chan *model.DTO),
 	}
 }
 //启动一个logic客服端,中转，将comet数据转发给 logic 服务
-func (l *logic) run() {
+func (l *logiclient) run() {
 	//dial
 	u := url.URL{Scheme: "ws", Host: l.logicaddr, Path: "/ws"}
 	vals := url.Values{}
@@ -58,7 +58,7 @@ func (l *logic) run() {
 	}
 }
 //将comet消息转发给logic
-func (l *logic) send() {
+func (l *logiclient) send() {
 	for {
 		select {
 		case dto := <-l.ch:

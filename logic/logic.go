@@ -133,13 +133,13 @@ func (l *logic) consume(ch chan *model.DTO) {
 	}
 }
 
-//rand ch
+//rand ch  随机获取一个channel传输消息
 func (l *logic) getch() (ch chan *model.DTO) {
 	ch = l.chs[rand.Int63n(l.chsCnt-1)]
 	return
 }
 
-//lgc watch reg
+//lgc watch reg  logic服务定时检测是否注册了，否则重新注册
 func (l *logic) watchreg(regAddr, lgcSvrPort string) {
 	t := time.NewTicker(time.Second * time.Duration(l.hbwatchreg))
 	for {

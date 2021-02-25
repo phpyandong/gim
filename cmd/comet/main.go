@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	c := comet.New(model.NewConf())
+	c := comet.NewCometServer(model.NewConf())
 	c.Run()
 }

@@ -17,40 +17,43 @@ import (
 
 var upgrader = websocket.Upgrader{} // use default options
 
-type comet struct {
+type cometServer struct { //Bucket
 
 	regaddr      string	//comet服务的地址
 	port         string
 	stop         chan error	//该服务停止信号
 
 
-	clibckcnt    int64    //config cli bucket size
-	cliCnt       int64    //client cnt
-	cligroup     sync.Map //bucket cli groups (sync.map->groupid:[]*client)
-	logics       sync.Map //logic conns (sync.map->addr:logic)
-	logicCnt     int64
 
-	isregistered bool	//是否注册
+	cligroup     sync.Map //bucket cli groups (sync.map->groupid:[]*client)
+						//comet 服务 存储群组id对应的client
+	clibkts      []*clibkt  //一个comet服务对应多个client  重要
 	chs          []chan *model.DTO //recv ( logic or cli ) msg chs
 	chsCnt       int64             //recv ( logic or cli ) msg ch cnt
+
+	logics       sync.Map //logic conns (sync.map->addr:logic) //维护ip对应的logic服务
+	logicCnt     int64
+	clibckcnt    int64    //config cli bucket size
+	cliCnt       int64    //client cnt
+	isregistered bool	//是否注册
+
 	hbregistry   int64
 	hblogic      int64		//与logic服务的心跳检测
 	hbclient     int64		//一个心跳检测的客户端
 	hbwatchreg   int64		//xin
 	grprw        sync.RWMutex
-	clibkts      []*clibkt  //一个comet服务对应多个client
 }
 type clibkt struct {
 	rw      sync.RWMutex
-	clients sync.Map // client conns (sync.map->uid:[]*client)
+	clients sync.Map // client conns (sync.map->uid:[]*client) key to a channel
 }
 
-func NewComet(conf *model.Conf) *comet {
+func NewCometServer(conf *model.Conf) *cometServer {
 	if conf == nil || conf.Registry == nil || conf.Registry.Host == "" {
 		panic("conf argument error")
 	}
 	addr := fmt.Sprintf("%s:%s", conf.Registry.Host, conf.Registry.Port)
-	c := &comet{
+	c := &cometServer{
 		cliCnt:       0,
 		clibckcnt:    conf.Comet.CliBckCnt,
 		cligroup:     sync.Map{},
@@ -78,7 +81,7 @@ func NewComet(conf *model.Conf) *comet {
 	return c
 }
 //启动comet服务
-func (c *comet) Run() {
+func (c *cometServer) Run() {
 	go func() {
 		http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 			Serve(w, r, c)
@@ -100,7 +103,7 @@ func (c *comet) Run() {
 }
 
 //batch recv msg
-func (c *comet) recv() {
+func (c *cometServer) recv() {
 	if c.chsCnt == 0 {
 		c.chsCnt = 1024
 	}
@@ -113,7 +116,7 @@ func (c *comet) recv() {
 
 //conn to  registry
 //comet 连接注册服务
-func (comet *comet) registry() {
+func (comet *cometServer) registry() {
 	//连接
 	u := url.URL{Scheme: "ws", Host: comet.regaddr, Path: "/ws"}
 	vals := url.Values{}
@@ -167,7 +170,7 @@ func (comet *comet) registry() {
 }
 
 //watch registry conn   监控注册是否成功，否则重新注册
-func (c *comet) watchreg() {
+func (c *cometServer) watchreg() {
 	t := time.NewTicker(time.Second * time.Duration(c.hbwatchreg))
 	defer t.Stop()
 	for {
@@ -181,7 +184,7 @@ func (c *comet) watchreg() {
 }
 
 //statistics logic conn cnt ,client conn cnt
-func (c *comet) statistics() {
+func (c *cometServer) statistics() {
 	t := time.NewTicker(time.Second * 1)
 	defer t.Stop()
 	//定时计数
@@ -230,7 +233,7 @@ func (c *comet) statistics() {
 }
 
 //consume msg  消费消息
-func (c *comet) consume(ch chan *model.DTO) {
+func (c *cometServer) consume(ch chan *model.DTO) {
 	for {
 		select {
 		case dto := <-ch:
@@ -430,7 +433,7 @@ func (c *comet) consume(ch chan *model.DTO) {
 }
 
 //conns to logic   与logic服务建立连接，在这里new logic client
-func (c *comet) connlogic(dto *model.DTO) {
+func (c *cometServer) connlogic(dto *model.DTO) {
 	if dto != nil && dto.Msg != nil && dto.Msg.Content != "" {
 		addrs := strings.Split(dto.Msg.Content, ",")
 		if len(addrs) > 0 {
@@ -447,13 +450,13 @@ func (c *comet) connlogic(dto *model.DTO) {
 }
 
 //rand a ch  多个channel中随机选择一个进行传递消息
-func (c *comet) getch() (ch chan *model.DTO) {
+func (c *cometServer) getch() (ch chan *model.DTO) {
 	ch = c.chs[rand.Int63n(c.chsCnt-1)]
 	return
 }
 
 //heartbeat 本服务的心跳检测
-func (c *comet) hb() {
+func (c *cometServer) hb() {
 	//hb to client
 	go func() {
 		t := time.NewTicker(time.Second * time.Duration(c.hbclient))
@@ -489,12 +492,12 @@ func (c *comet) hb() {
 	}()
 }
 //hash算法，获取客户端的index
-func (c *comet) modclidx(id int64) (idx int64) {
+func (c *cometServer) modclidx(id int64) (idx int64) {
 	return id % c.clibckcnt
 }
 
 //clis mv cli
-func (c *comet) mvcli(cli *client) {
+func (c *cometServer) mvcli(cli *client) {
 	if cli != nil {
 		idx := c.modclidx(cli.id)
 		bkt := c.clibkts[idx]
@@ -519,7 +522,7 @@ func (c *comet) mvcli(cli *client) {
 }
 
 //clis add cli
-func (c *comet) addcli(cli *client) {
+func (c *cometServer) addcli(cli *client) {
 	if cli != nil {
 		idx := c.modclidx(cli.id)
 		bkt := c.clibkts[idx]
@@ -548,7 +551,7 @@ func (c *comet) addcli(cli *client) {
 }
 
 //grp add cli
-func (c *comet) grpaddcli(cli *client, grpid int64) {
+func (c *cometServer) grpaddcli(cli *client, grpid int64) {
 	if cli != nil {
 		c.grprw.Lock()
 		newclis := make([]*client, 0)
@@ -572,7 +575,29 @@ func (c *comet) grpaddcli(cli *client, grpid int64) {
 }
 
 //group remove special cli
-func (c *comet) grpmvcli(cli *client, grpid int64) {
+func (c *cometServer) grpmvcli(cli *client, grpid int64) {
+	if cli != nil {
+		c.grprw.Lock()
+		defer c.grprw.Unlock()
+		idx, isexist := 0, false
+		if clis, ok := c.cligroup.Load(grpid); ok {
+			clis, ok := clis.([]*client)
+			if ok {
+				for i, v := range clis {
+					if v.id == cli.id && cli.tag == v.tag {
+						idx, isexist = i, true
+					}
+				}
+			}
+			if isexist {
+				clis = append(clis[:idx], clis[idx+1:]...)
+				c.cligroup.Store(grpid, clis)
+			}
+		}
+	}
+}
+//group remove special cli
+func (c *cometServer) grpmvcli2(cli *client, grpid int64) {
 	if cli != nil {
 		c.grprw.Lock()
 		defer c.grprw.Unlock()
@@ -595,7 +620,7 @@ func (c *comet) grpmvcli(cli *client, grpid int64) {
 }
 
 //isexist in clis
-func (c *comet) isexist(cli *client) bool {
+func (c *cometServer) isexist(cli *client) bool {
 	if cli != nil {
 		idx := c.modclidx(cli.id)
 		bkt := c.clibkts[idx]

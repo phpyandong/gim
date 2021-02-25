@@ -12,17 +12,18 @@ import (
 )
 
 type client struct {
-	comet  *comet
+	comet  *cometServer
 	conn   *websocket.Conn
-	id     int64
+	id     int64  //用户id
 	tag    string
 	ch     chan *model.DTO
 	stop   chan error
-	groups []int64
+	groups []int64  //对应的group 群号
+	groupsObj Groups
 	rw     sync.RWMutex
 }
 
-func new(comet *comet, conn *websocket.Conn, id int64, tag string) *client {
+func newClient(comet *cometServer, conn *websocket.Conn, id int64, tag string) *client {
 	return &client{
 		comet:  comet,
 		conn:   conn,
@@ -92,7 +93,7 @@ func (cli *client) send() {
 }
 
 //监听
-func Serve(w http.ResponseWriter, r *http.Request, cc *comet) {
+func Serve(w http.ResponseWriter, r *http.Request, cc *cometServer) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("cli upgrade:", err)
@@ -107,7 +108,7 @@ func Serve(w http.ResponseWriter, r *http.Request, cc *comet) {
 	if err != nil || tag == "" {
 		return
 	}
-	cli := new(cc, conn, id, tag)
+	cli := newClient(cc, conn, id, tag)
 	if cli.comet.isexist(cli) {
 		return
 	}
@@ -130,7 +131,19 @@ func (cli *client) quitgrp(dto *model.DTO) {
 	}
 	cli.rw.Unlock()
 }
-
+//退出指定群
+func (cli *client) quitgrp2(dto *model.DTO) {
+	//cli.rw.Lock()
+	idx, isexist := 0, false
+	for i, grpid := range cli.groups {
+		if dto.Msg.GroupID == grpid {
+			idx, isexist = i, true
+			cli.comet.grpmvcli(cli, grpid)
+		}
+	}
+	cli.groupsObj.quitgrp(dto)
+	//cli.rw.Unlock()
+}
 //退出所有群
 func (cli *client) quitallgrp() {
 	cli.rw.Lock()

@@ -33,7 +33,7 @@ func (c *comet) run() {
 	go c.hb()		//启动一个goroutinue 进行心跳检测
 	<-c.stop
 }
-
+//logic 服务接收comet服务的消息
 func (c *comet) recv() {
 	for {
 		j := &model.DTO{}
